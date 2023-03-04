@@ -69,14 +69,9 @@ class desktop_type(TypedDict):
     root:node_type
 
 class Node_set():
-    def __init__(self, iterator:Iterable['Node'], ordered=False, keep_order=True):
+    def __init__(self, iterator:Iterable['Node'], ordered=False):
         self._set:set[Node] = set(iterator)
         self.ordered = ordered
-
-        if not keep_order:
-            self.ordered = True
-            for i,node in enumerate(self._set):
-                node.__dict__['index'] = i
 
     def pop(self) -> 'Node|None':
         if not len(self._set):
@@ -109,13 +104,13 @@ class Node_set():
         return self
 
     def intersection(self, other:'Node_set'):
-        return Node_set(self._set.intersection(other._set), ordered=self.ordered)
+        return Node_set(self._set.intersection(other), ordered=self.ordered)
     def difference(self, other:'Node_set'):
-        return Node_set(self._set.difference(other._set), ordered=self.ordered)
+        return Node_set(self._set.difference(other), ordered=self.ordered)
     def __and__(self, other:'Node_set'):
-        return Node_set(self._set.__and__(other._set), ordered=self.ordered)
+        return Node_set(self._set.intersection(other), ordered=self.ordered)
     def __sub__(self, other:'Node_set'):
-        return Node_set(self._set.__sub__(other._set), ordered=self.ordered)
+        return Node_set(self._set.difference(other), ordered=self.ordered)
     def __iter__(self):
         return iter(self._set)
     def __repr__(self):
