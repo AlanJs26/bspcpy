@@ -2,22 +2,23 @@
 
 > It's a wrapper for the bspwm command line utility `bspc`.
 
-bspwm is a awesome tiling window manager with a bunch of features, but when I need to develop some script a bit more advanced there is no many options rather than using bash script ~~(that I hate)~~. So to address this problem I wrote this simple api.
+bspwm is an awesome tiling window manager with a bunch of features, but when I need to develop some script that is a bit more advanced, there are not many options other than using a bash script ~~(which I hate)~~. So, to address this problem, I wrote this simple API.
 
 ## Usage
 
-Is very easy to use, almost everything have the same names as the original bspc.
+Since everything has the same names as the original bspc, It should be very easy to use.
 
-Meanwhile I have only implemented the query commands
+For now, I have only implemented the query commands
 
 ```python
 nodes(selector: str) -> Node_set()
 desktops(selector: str) -> set[Desktop]
 monitors(selector: str) -> set[Monitor]
 ```
-and some classes that represents nodes, desktops and monitors.
 
-all query methods returns python sets, so is possible to filter the nodes using set notation.
+and the classes that represent nodes, desktops, and monitors.
+
+All query methods return Python sets, so it is possible to filter the nodes using set notation.
 
 ```python
 from bspc import query
@@ -29,15 +30,15 @@ for node in floating_nodes:
         node.layout = 'tiled'
 ```
 
-> This snippet find all floating firefox windows and put them in tiled layout
+> This snippet finds all floating Firefox windows and puts them in tiled layout.
 
-An example of a implementation of a scratchpad using bspcpy is located on the `examples` folder
+I wrote an implementation of a scratchpad using bspcpy in the `examples` folder.
 
 ## Requirements
 
 - [xwininfo](https://archlinux.org/packages/extra/x86_64/xorg-xwininfo/)
 
-## Instalation
+## Installation
 
 ### Via pip
 
