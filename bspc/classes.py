@@ -108,18 +108,14 @@ class Node_set():
             node.__dict__['index'] = i
         return self
 
+    def intersection(self, other:'Node_set'):
+        return Node_set(self._set.intersection(other._set), ordered=self.ordered)
+    def difference(self, other:'Node_set'):
+        return Node_set(self._set.difference(other._set), ordered=self.ordered)
     def __and__(self, other:'Node_set'):
-        ordered = self.ordered or other.ordered
-        if self.ordered:
-            return Node_set(other._set.__and__(self._set), ordered=ordered)
-        else:
-            return Node_set(self._set.__and__(other._set), ordered=ordered)
+        return Node_set(self._set.__and__(other._set), ordered=self.ordered)
     def __sub__(self, other:'Node_set'):
-        ordered = self.ordered or other.ordered
-        if self.ordered:
-            return Node_set(self._set.__sub__(other._set), ordered=ordered)
-        else:
-            return Node_set(other._set.__sub__(self._set), ordered=ordered)
+        return Node_set(self._set.__sub__(other._set), ordered=self.ordered)
     def __iter__(self):
         return iter(self._set)
     def __repr__(self):
