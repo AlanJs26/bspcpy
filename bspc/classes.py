@@ -124,6 +124,7 @@ class Node:
         self.__dict__['index'] = index
         self.id:int
         self.className:str
+        self.layout:str
 
         self.splitType: str
         self.splitRatio: float
@@ -148,8 +149,10 @@ class Node:
 
         if self.client:
             self.__dict__['className'] = self.client['className']
+            self.__dict__['layout'] = self.client['state']
         else:
             self.__dict__['className'] = ''
+            self.__dict__['layout'] = ''
         
     def __repr__(self):
         return f'Node(id={hex(self.id)})'
@@ -187,7 +190,7 @@ class Node:
         return win_name
 
     def command(self, command:str):
-        subprocess.run(['bspc', 'node', hex(self.id), *command.split(' ')])
+        subprocess.run(['bspc', 'node', hex(self.id), *command.strip().split(' ')])
 
     def balance(self):
         self.command('--balance')
@@ -216,6 +219,9 @@ class Node:
     def layer(self, name:Literal['below', 'normal', 'above']):
         self.command(f'--layer {name}')
 
+    def presel_dir(self, direction:Literal['north', 'west', 'south', 'east']):
+        self.command(f'--presel-dir {direction}')
+
     def state(self, name:Literal['tiled', 'pseudo_tiled', 'floating', 'fullscreen']):
         self.command(f'--state {name}')
 
@@ -234,17 +240,29 @@ class Node:
     def move(self, dx:int, dy:int):
         self.command(f'--move {dx} {dy}')
 
-    def swap(self, selector:str, follow=False):
-        self.command(f'--swap {selector} {"--follow" if follow else ""}')
+    def swap(self, selector:str|int, follow=False):
+        if isinstance(selector,int):
+            self.command(f'--swap {hex(selector)} {"--follow" if follow else ""}')
+        else:
+            self.command(f'--swap {selector} {"--follow" if follow else ""}')
 
-    def to_node(self, selector:str, follow=False):
-        self.command(f'--to-node {selector} {"--follow" if follow else ""}')
+    def to_node(self, selector:str|int, follow=False):
+        if isinstance(selector, int):
+            self.command(f'--to-node {hex(selector)} {"--follow" if follow else ""}')
+        else:
+            self.command(f'--to-node {selector} {"--follow" if follow else ""}')
 
-    def to_monitor(self, selector:str, follow=False):
-        self.command(f'--to-monitor {selector} {"--follow" if follow else ""}')
+    def to_monitor(self, selector:str|int, follow=False):
+        if isinstance(selector,int):
+            self.command(f'--to-monitor {hex(selector)} {"--follow" if follow else ""}')
+        else:
+            self.command(f'--to-monitor {selector} {"--follow" if follow else ""}')
 
-    def to_desktop(self, selector:str, follow=False):
-        self.command(f'--to-desktop {selector} {"--follow" if follow else ""}')
+    def to_desktop(self, selector:str|int, follow=False):
+        if isinstance(selector,int):
+            self.command(f'--to-desktop {hex(selector)} {"--follow" if follow else ""}')
+        else:
+            self.command(f'--to-desktop {selector} {"--follow" if follow else ""}')
 
 
 class Desktop:
@@ -295,8 +313,11 @@ class Desktop:
     def swap(self, selector:str, follow=False):
         self.command(f'--swap {selector} {"--follow" if follow else ""}')
 
-    def to_monitor(self, selector:str, follow=False):
-        self.command(f'--to-monitor {selector} {"--follow" if follow else ""}')
+    def to_monitor(self, selector:str|int, follow=False):
+        if isinstance(selector,int):
+            self.command(f'--to-monitor {hex(selector)} {"--follow" if follow else ""}')
+        else:
+            self.command(f'--to-monitor {selector} {"--follow" if follow else ""}')
 
     def rename(self, name:str):
         self.command(f'--rename {name}')
