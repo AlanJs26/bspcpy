@@ -77,11 +77,11 @@ def hold_window(event, node:Node, hold_behaviour: Literal['tiled', 'floating']):
             node.client['tiledRectangle']['width']-rectangle['width'],
             node.client['tiledRectangle']['height']-rectangle['height']
         )
-        node = Node(node.id) or node
-        if node.client:
-            rectangle = node.client['floatingRectangle']
-            center = rect_center(rectangle)
-            node.move(x-center['x'], y-center['y'])
+        node.refresh()
+
+        rectangle = node.client['floatingRectangle']
+        center = rect_center(rectangle)
+        node.move(x-center['x'], y-center['y'])
     while True:
         if event.is_set():
             event.clear()
@@ -127,13 +127,12 @@ while True:
         event.set()
         if is_holding and focused_node and hold_behaviour == 'tiled':
             pointer = display.Display().screen().root.query_pointer()
-            mouse_x = pointer.root_x
             mouse_y = pointer.root_y
+            mouse_x = pointer.root_x
 
             desktop = bspc.query.desktops('focused').pop()
 
-            node_id = find_node_below(desktop.root, mouse_x, mouse_y, focused_node.id)
-            if node_id:
+            if desktop and (node_id := find_node_below(desktop.root, mouse_x, mouse_y, focused_node.id)):
                 node_below = Node(node_id)
                 if node_below.client:
                     center = rect_center(node_below.client['tiledRectangle'])

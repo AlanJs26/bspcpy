@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic, TypeVar
 if TYPE_CHECKING:
     from _typeshed import SupportsRichComparison
 import subprocess
@@ -68,21 +68,23 @@ class desktop_type(TypedDict):
     padding:padding_type
     root:node_type
 
-class Node_set():
-    def __init__(self, iterator:Iterable['Node'], ordered=False):
-        self._set:set[Node] = set(iterator)
+T = TypeVar('T', bound='Node|Desktop|Monitor')
+
+class Element_set(Generic[T]):
+    def __init__(self, iterator:Iterable['T'], ordered=False):
+        self._set:set[T] = set(iterator)
         self.ordered = ordered
 
-    def pop(self) -> 'Node|None':
+    def pop(self) -> 'T|None':
         if not len(self._set):
             return None
         return max(self._set, key=attrgetter('index'))
-    def first(self) -> 'Node|None':
+    def first(self) -> 'T|None':
         if not len(self._set):
             return None
         return min(self._set, key=attrgetter('index'))
 
-    def next(self, node:'Node|None') -> 'Node|None':
+    def next(self, node:'T|None') -> 'T|None':
         if not node:
             return None
 
@@ -90,27 +92,27 @@ class Node_set():
 
         return next_node or self.first()
 
-    def filter(self, callback:Callable[['Node'], bool]):
+    def filter(self, callback:Callable[['T'], bool]):
         new_set = copy(self._set)
         for item in self._set:
             if not callback(item):
                 new_set.remove(item)
-        return Node_set(new_set, ordered=self.ordered)
+        return Element_set(new_set, ordered=self.ordered)
     
-    def sort(self, key:Callable[['Node'], SupportsRichComparison], reverse=False):
+    def sort(self, key:Callable[['T'], SupportsRichComparison], reverse=False):
         self.ordered = True
         for i,node in enumerate(sorted(self._set, key=key, reverse=reverse)):
             node.__dict__['index'] = i
         return self
 
-    def intersection(self, other:'Node_set'):
-        return Node_set(self._set.intersection(other), ordered=self.ordered)
-    def difference(self, other:'Node_set'):
-        return Node_set(self._set.difference(other), ordered=self.ordered)
-    def __and__(self, other:'Node_set'):
-        return Node_set(self._set.intersection(other), ordered=self.ordered)
-    def __sub__(self, other:'Node_set'):
-        return Node_set(self._set.difference(other), ordered=self.ordered)
+    def intersection(self, other:'Element_set'):
+        return Element_set(self._set.intersection(other), ordered=self.ordered)
+    def difference(self, other:'Element_set'):
+        return Element_set(self._set.difference(other), ordered=self.ordered)
+    def __and__(self, other:'Element_set'):
+        return Element_set(self._set.intersection(other), ordered=self.ordered)
+    def __sub__(self, other:'Element_set'):
+        return Element_set(self._set.difference(other), ordered=self.ordered)
     def __iter__(self):
         return iter(self._set)
     def __repr__(self):
@@ -118,11 +120,22 @@ class Node_set():
     def __bool__(self):
         return bool(self._set)
 
+class Node_set(Element_set['Node']):
+    def __init__(self, iterator:Iterable['Node'], ordered=False):
+        super().__init__(iterator, ordered)
+class Desktop_set(Element_set['Desktop']):
+    def __init__(self, iterator:Iterable['Desktop'], ordered=False):
+        super().__init__(iterator, ordered)
+class Monitor_set(Element_set['Monitor']):
+    def __init__(self, iterator:Iterable['Monitor'], ordered=False):
+        super().__init__(iterator, ordered)
+
 class Node:
     def __init__(self, id:int, index=-1):
-        self.index:int
-        self.__dict__['index'] = index
         self.id:int
+        self.index:int
+        self.__dict__['id'] = id
+        self.__dict__['index'] = index
         self.className:str
         self.layout:str
 
@@ -141,7 +154,10 @@ class Node:
         self.secondChild: node_type|None
         self.client: client_type|None
 
-        result = subprocess.run(['bspc', 'query','-T', '-n', hex(id)], capture_output=True, text=True)
+        self.refresh()
+
+    def refresh(self):
+        result = subprocess.run(['bspc', 'query','-T', '-n', hex(self.id)], capture_output=True, text=True)
 
         data = json.loads(result.stdout)
         for item in data:
@@ -179,9 +195,9 @@ class Node:
 
     @property
     def name(self):
-        result = subprocess.run(['xwininfo', '-id', hex(self.id)], check=True, capture_output=True)
-        result = subprocess.run(['head', '-n2'], input=result.stdout, check=True, capture_output=True)
-        result = subprocess.run(['grep', r'\"(.+)\"', '-E', '-o'], input=result.stdout, check=True, capture_output=True)
+        result = subprocess.run(['xwininfo', '-id', hex(self.id)], check=False, capture_output=True)
+        result = subprocess.run(['head', '-n2'], input=result.stdout, check=False, capture_output=True)
+        result = subprocess.run(['grep', r'\"(.+)\"', '-E', '-o'], input=result.stdout, check=False, capture_output=True)
 
         win_name = result.stdout.decode().strip()
         if win_name:
@@ -268,6 +284,9 @@ class Node:
 class Desktop:
     def __init__(self, id:int):
         self.id:int
+        self.index:int
+        self.__dict__['id'] = id
+        self.__dict__['index'] = 0
 
         self.name:str
         self.layout:str
@@ -278,7 +297,8 @@ class Desktop:
         self.padding:padding_type
         self.root:node_type
 
-        result = subprocess.run(['bspc', 'query','-T', '-d', hex(id)], capture_output=True, text=True)
+    def refresh(self):
+        result = subprocess.run(['bspc', 'query','-T', '-d', hex(self.id)], capture_output=True, text=True)
 
         data = json.loads(result.stdout)
         for item in data:
@@ -332,6 +352,9 @@ class Desktop:
 class Monitor:
     def __init__(self, id:int):
         self.id:int
+        self.index:int
+        self.__dict__['id'] = id
+        self.__dict__['index'] = 0
 
         self.name:str
         self.randrId:int
@@ -344,7 +367,8 @@ class Monitor:
         self.rectangle:rectangle_type
         self.desktops:list[desktop_type]
 
-        result = subprocess.run(['bspc', 'query','-T', '-m', hex(id)], capture_output=True, text=True)
+    def refresh(self):
+        result = subprocess.run(['bspc', 'query','-T', '-m', hex(self.id)], capture_output=True, text=True)
 
         data = json.loads(result.stdout)
         for item in data:
