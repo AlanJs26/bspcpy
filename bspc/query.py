@@ -1,26 +1,57 @@
 import subprocess
-from .classes import Node, Desktop, Monitor, Node_set
+from typing import Optional
+from .classes import Node, Desktop, Monitor, Node_set, Desktop_set, Monitor_set
 
-def nodes(selector: str):
-    result = subprocess.run(['bspc', 'query','-N', '-n', *selector.split(' ')], capture_output=True, text=True)
+def nodes(node_selector:Optional[str]=None, desktop_selector:Optional[str]=None, monitor_selector:Optional[str]=None):
+    if not (node_selector or desktop_selector or monitor_selector):
+        return Node_set(())
+    selector = ''
+    if node_selector:
+        selector+= f' -n {node_selector}'
+    if desktop_selector:
+        selector+= f' -d {desktop_selector}'
+    if monitor_selector:
+        selector+= f' -m {monitor_selector}'
+
+    result = subprocess.run(['bspc', 'query','-N', *selector.split()], capture_output=True, text=True)
 
     ids = result.stdout.splitlines()
 
     return Node_set(Node(id=int(id, base=16)) for id in ids)
 
 
-def desktops(selector: str):
-    result = subprocess.run(['bspc', 'query','-D', '-d', *selector.split(' ')], capture_output=True, text=True)
+def desktops(desktop_selector:Optional[str]=None, node_selector:Optional[str]=None, monitor_selector:Optional[str]=None):
+    if not (node_selector or desktop_selector or monitor_selector):
+        return Desktop_set(())
+    selector = ''
+    if node_selector:
+        selector+= f' -n {node_selector}'
+    if desktop_selector:
+        selector+= f' -d {desktop_selector}'
+    if monitor_selector:
+        selector+= f' -m {monitor_selector}'
+
+    result = subprocess.run(['bspc', 'query','-D', *selector.split()], capture_output=True, text=True)
 
     ids = result.stdout.splitlines()
 
-    return set(Desktop(id=int(id, base=16)) for id in ids)
+    return Desktop_set(Desktop(id=int(id, base=16)) for id in ids)
 
 
-def monitors(selector: str):
-    result = subprocess.run(['bspc', 'query','-M', '-m', *selector.split(' ')], capture_output=True, text=True)
+def monitors(monitor_selector:Optional[str]=None, node_selector:Optional[str]=None, desktop_selector:Optional[str]=None):
+    if not (node_selector or desktop_selector or monitor_selector):
+        return Monitor_set(())
+    selector = ''
+    if node_selector:
+        selector+= f' -n {node_selector}'
+    if desktop_selector:
+        selector+= f' -d {desktop_selector}'
+    if monitor_selector:
+        selector+= f' -m {monitor_selector}'
+
+    result = subprocess.run(['bspc', 'query','-M', *selector.split()], capture_output=True, text=True)
 
     ids = result.stdout.splitlines()
 
-    return set(Monitor(id=int(id, base=16)) for id in ids)
+    return Monitor_set(Monitor(id=int(id, base=16)) for id in ids)
 
