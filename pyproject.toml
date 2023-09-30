@@ -1,18 +1,24 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.version]
+source = "file"
+path = "bspc/__init__.py"
 
 [project]
 name="bspcpy"
 version="1.0.3.1"
-license = { file = "LICENSE" }
+license = { file = "LICENSE", text = "MIT"}
 readme = "README.md"
-authors=[{ name = "AlanJS26", email = "alanjoses.29@gmail.com" }]
+authors=[
+    { name = "AlanJS26", email = "alanjoses.29@gmail.com" },
+]
 description="bspc wrapper for python"
 keywords = ["python", "bspwm", "bspc"]
 requires-python = ">=3.10"
-
 dependencies = []
+
 
 [project.urls]
 Homepage="https://github.com/AlanJs26/bspcpy"
