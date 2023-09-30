@@ -2,14 +2,10 @@
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-[tool.pdm.version]
-source = "file"
-path = "bspc/__init__.py"
-
 [project]
 name="bspcpy"
-version="1.0.3.1"
-license = { file = "LICENSE", text = "MIT"}
+version="1.0.3.3"
+license = { text = "MIT"}
 readme = "README.md"
 authors=[
     { name = "AlanJS26", email = "alanjoses.29@gmail.com" },
