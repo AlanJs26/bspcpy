@@ -297,6 +297,8 @@ class Desktop:
         self.padding:padding_type
         self.root:node_type
 
+        self.refresh()
+
     def refresh(self):
         result = subprocess.run(['bspc', 'query','-T', '-d', hex(self.id)], capture_output=True, text=True)
 

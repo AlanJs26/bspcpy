@@ -1,5 +1,5 @@
 # from .query import *
 # from .query import nodes
-import query
-import classes
+from . import query
+from . import classes
 

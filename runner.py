@@ -1,5 +1,6 @@
 if __name__ == '__main__':
     import bspc.query
+    # import bspc
     # from bspc.classes import Node, rectangle_type
 
     nodes = bspc.query.nodes( desktop_selector='focused')
